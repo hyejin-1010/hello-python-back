@@ -4,7 +4,7 @@ from firebase_admin import credentials
 from firebase_admin import db
 
 #데이터베이스
-cred = credentials.Certificate("key\hello-python-fbe83-firebase-adminsdk-4updc-c46193ba98.json")
+cred = credentials.Certificate("hello-python-fbe83-firebase-adminsdk-4updc-c46193ba98.json")
 firebase_admin.initialize_app(cred,{
     'databaseURL':'https://hello-python-fbe83-default-rtdb.firebaseio.com/'
 })

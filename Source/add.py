@@ -36,14 +36,21 @@ def deleteUser() :
   User.DeleteData(session['userid'])
   return redirect('/')
 
+def do_the_login(args) :
+  return { 'success': True }
+
 @app.route('/login/', methods=['GET','POST']) #login
-def login() :
-  form = LoginForm() #로그인폼
-  if form.validate_on_submit(): #유효성 검사
-    print('{}가 로그인 했습니다'.format(form.data.get('userid')))
-    session['userid']=form.data.get('userid') #form에서 가져온 userid를 세션에 저장
-    return redirect('/') #성공하면 main.html로
-  return render_template('login.html', form=form)
+def login(args) :
+  print('call login')
+  if request.method == 'POST':
+    return do_the_login(args)
+  else:
+    form = LoginForm() #로그인폼
+    if form.validate_on_submit(): #유효성 검사
+      print('{}가 로그인 했습니다'.format(form.data.get('userid')))
+      session['userid']=form.data.get('userid') #form에서 가져온 userid를 세션에 저장
+      return redirect('/') #성공하면 main.html로
+    return render_template('login.html', form=form)
 
 @app.route('/logout/', methods=['GET']) 
 def logout() : 
@@ -57,7 +64,9 @@ if __name__=="__main__":
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False #추가 메모리를 사용하므로 꺼둔다
   app.config['SECRET_KEY']='asdfasdfasdfqwerty' #해시값은 임의로 적음
 
+  '''
   csrf = CSRFProtect()
   csrf.init_app(app)
+  '''
 
   app.run(debug=False)  # host 등을 직접 지정하고 싶다면 app.run(host="127.0.0.1", port="5000", debug=True)
