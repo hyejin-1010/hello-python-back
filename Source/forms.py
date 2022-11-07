@@ -24,3 +24,6 @@ class LoginForm(FlaskForm):
                 
     userid = StringField('userid', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired(), UserPassword()])
+
+class UserInform(FlaskForm) :
+    file = StringField('file', validators=[DataRequired()])

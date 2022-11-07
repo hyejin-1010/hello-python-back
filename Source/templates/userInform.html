@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+  <body>
+    <div class="print"> 점수 : {{data['point']}}</div>
+    <form method = "POST" enctype = "multipart/form-data">
+      {{form.csrf_token}} <!--csft활성화-->
+      <input type = "file" name = "file" />
+      <input type = "submit"/>
+    </form>
+    <div>
+      <img = src= "{{url_for('static', filename=data['profileImage'])}}">
+    </div>
+  </body>
+</html>

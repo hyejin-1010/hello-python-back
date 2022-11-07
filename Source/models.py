@@ -1,6 +1,6 @@
 from collections import UserDict
 import firebase_admin
-from firebase_admin import credentials
+from firebase_admin import credentials, storage
 from firebase_admin import db
 
 #데이터베이스
@@ -29,11 +29,14 @@ class User(): #사용자 정보
                 'userid' : userid,
                 'nickname' : nickname,
                 'password' : password,
+                'point' : 0,
+                'profileImage' : '',
             })
+            return True
         except Exception as e:
             print(e)
             return False
-        return True
+        return False
     
     def DeleteData(userid) :
         try :
@@ -51,7 +54,7 @@ class User(): #사용자 정보
         try :
             userPath = db.reference('/Users').get()
             if (userPath) : 
-                for key ,value in userPath.items() :
+                for key, value in userPath.items() :
                     if key == userid : 
                         if value['password'] == password :
                             return True
@@ -62,6 +65,30 @@ class User(): #사용자 정보
             print(e)
             return False
         return True
+    
+    def LogoutData() :
+       userData = '' #데이터 초기화
+
+    def GetUserData(userid) :
+        try :
+            userPath = db.reference('/Users').get()
+            if (userPath) : 
+                for key, value in userPath.items() :
+                    if key == userid : 
+                        return value
+        except Exception as e:
+            print(e)
+        return None
+    
+    def SetProfileImage(userid, filepath) :        
+        bucket = storage.bucket()
+        blob = bucket.blob(filepath)
+        blob.upload_from_filename(filepath)
+        blob.make_public()
         
+        db.reference('/Users').get().child(userid).update({
+            'profileImage' : filepath,
+        })
+
 
 
