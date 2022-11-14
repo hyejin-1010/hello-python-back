@@ -2,11 +2,13 @@ from collections import UserDict
 import firebase_admin
 from firebase_admin import credentials, storage
 from firebase_admin import db
+from uuid import uuid4
 
 #데이터베이스
 cred = credentials.Certificate("key\hello-python-fbe83-firebase-adminsdk-4updc-c46193ba98.json")
 firebase_admin.initialize_app(cred,{
-    'databaseURL':'https://hello-python-fbe83-default-rtdb.firebaseio.com/'
+    'databaseURL':'https://hello-python-fbe83-default-rtdb.firebaseio.com/',
+    'storageBucket': 'hello-python-fbe83.appspot.com'
 })
 dir = db.reference() #기본 위치 지정
 
@@ -30,7 +32,7 @@ class User(): #사용자 정보
                 'nickname' : nickname,
                 'password' : password,
                 'point' : 0,
-                'profileImage' : '',
+                'profileImage' : 'https://firebasestorage.googleapis.com/v0/b/hello-python-fbe83.appspot.com/o/user.png?alt=media&token=6b8057b2-5e01-4874-95dd-34406afc1c34',
             })
             return True
         except Exception as e:
@@ -83,11 +85,23 @@ class User(): #사용자 정보
     def SetProfileImage(userid, filepath) :        
         bucket = storage.bucket()
         blob = bucket.blob(filepath)
-        blob.upload_from_filename(filepath)
+
+        # Create new token
+        new_token = uuid4()
+        # Create new dictionary with the metadata
+        metadata  = {"firebaseStorageDownloadTokens": new_token}
+        blob.metadata = metadata
+
+        # Upload file
+        blob.upload_from_filename(filename=filepath, content_type='image/png')
         blob.make_public()
-        
-        db.reference('/Users').get().child(userid).update({
-            'profileImage' : filepath,
+
+        # delete origin File
+
+
+        # change path
+        db.reference('/Users').child(userid).update({
+            'profileImage' : blob.public_url,
         })
 
 
