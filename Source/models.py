@@ -2,6 +2,7 @@ from collections import UserDict
 import firebase_admin
 from firebase_admin import credentials, storage
 from firebase_admin import db
+from flask import jsonify #jsonify
 from uuid import uuid4
 
 #데이터베이스
@@ -38,7 +39,6 @@ class User(): #사용자 정보
         except Exception as e:
             print(e)
             return False
-        return False
     
     def DeleteData(userid) :
         try :
@@ -104,5 +104,198 @@ class User(): #사용자 정보
             'profileImage' : blob.public_url,
         })
 
+class Lesson : #DB는 class인데 예약어라 사용 불가능하여 수정 
+    pass
+
+class Learning :    
+    def __init__(self) :
+        self.learningID = 0
+        self.Title = "n번째 강의입니다."
+        self.video = "url" # 강의 영상 url
+        self.pointGameIDs = {'id1' : 1} # pointGame 데이터베이스 정보
+        
+    def getData(self) : 
+        data = {
+            "learningID" : self.learningID,
+            "Title" : self.Title,
+            "video" : self.video,
+            "pointGameIDs" : self.pointGameIDs,
+        }
+        return data
+    
+    def addLearning(self) :
+        try :
+            #path = db.reference('/Learning').get()
+
+            if Learning.findLearningData(self.learningID) != None :  #중복 uid 
+                return False
+
+            #정보 저장
+            userPath = db.reference('/Learning')
+            userPath.child(self.learningID).set({ 
+                'learningID' : self.learningID,
+                'Title' : self.Title,
+                'video' : self.video,
+                'pointGameIDs' : self.pointGameIDs,
+            })
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def editLearning(self) :
+        try :
+            if Learning.findLearningData(self.learningID) == None :  #정보 없음 
+                return False
+
+            #정보 저장
+            userPath = db.reference('/Learning')
+            userPath.child(self.learningID).update({ 
+                'learningID' : self.learningID,
+                'Title' : self.Title,
+                'video' : self.video,
+                'pointGameIDs' : self.pointGameIDs,
+            })
+            return True
+        except Exception as e:
+            print(e)
+            return False
+            
+    def deleteLearning(learningID) :
+        try :
+            if Learning.findLearningData(learningID) == None :  #정보 없음 
+                return False
+
+            db.reference('/Learning/' + learningID).delete()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def findLearningData(learningID) : 
+        userPath = db.reference('/Learning').get()
+        if (userPath) : 
+            for key, value in userPath.items() :
+                if value['learningID'] == learningID :
+                    return value
+        return None #일치하는 정보 없음
+    
+    def AllData() :
+        userPath = db.reference('/Learning').get()
+        if (userPath) :
+            data = {}
+            for key, value in userPath.items() : 
+                data[key] = value
+            return data
+        return None
+    
+
+class PointGame : 
+    def __init__(self) :
+        self.pointGameID = 0
+        self.title = "타이틀"
+        self.description = "설명"
+        self.content = "내용"
+        self.answer = "corectAnswer"
+        self.selection  = {
+            "예제1":"a",
+            "예제2":"b",
+            "예제3":"c"
+        } #객관식의 경우 예시
+        self.hint = {
+            "1" : "내용",
+            "2" : "내용",
+            "3" : "내용"
+        }
+        self.earnPoint = 5  #정답을 맞추면 벌 수 있는 포인트. 힌트 사용시 n점씩 줄어든다.
+    
+    def getData(self) :
+        data = {
+            "pointGameID" : self.pointGameID,
+            "title" : self.title,
+            "description" : self.description,
+            "content" : self.content,
+            "answer" : self.answer,
+            "selection" : self.selection,
+            "hint" : self.hint,
+            "earnPoint" : self.earnPoint ,
+        }
+        return data
+
+    def addPointGame(self) : 
+        try :
+            if PointGame.finePointGame(self.pointGameID) != None :  #중복 uid 
+                return False
+
+            #정보 저장
+            userPath = db.reference('/PointGame')
+            userPath.child(self.pointGameID).set({ 
+                'pointGameID' : self.pointGameID,
+                "title" : self.title,
+                "description" : self.description,
+                "content" : self.content,
+                "answer" : self.answer,
+                "selection" : self.selection,
+                "hint" : self.hint,
+                "earnPoint" : self.earnPoint ,
+            })
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def editPointGame(self) : 
+        try :
+            if PointGame.finePointGame(self.pointGameID) == None :  #정보 없음 
+                return False
+
+            #정보 저장
+            userPath = db.reference('/PointGame')
+            userPath.child(self.pointGameID).update({ 
+                "pointGameID" : self.pointGameID,
+                "title" : self.title,
+                "description" : self.description,
+                "content" : self.content,
+                "answer" : self.answer,
+                "selection" : self.selection,
+                "hint" : self.hint,
+                "earnPoint" : self.earnPoint ,
+            })
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def deletePointGame(pointGameID) : 
+        try :
+            if PointGame.finePointGame(pointGameID) == None :  #정보 없음 
+                return False
+
+            db.reference('/PointGame/' + pointGameID).delete()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def finePointGame(pointGameID) : 
+        userPath = db.reference('/PointGame').get()
+        if (userPath) : 
+            for key, value in userPath.items() :
+                if value['pointGameID'] == pointGameID :
+                    return value
+        return None #일치하는 정보 없음
+
+    def AllData() :
+        userPath = db.reference('/PointGame').get()
+        if (userPath) :
+            data = {}
+            for key, value in userPath.items() : 
+                data[key] = value
+            return data
+        return None
+
+
+
+        
 
 

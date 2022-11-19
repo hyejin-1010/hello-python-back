@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 #다른 .py 임포트
-from models import User
+from models import User, Learning, PointGame
 
 @app.route('/', methods=['GET']) # 메인페이지
 def mainpage():
@@ -71,7 +71,7 @@ def login() :
       return jsonify(data)
 
 @app.route('/logout/') 
-def logout() : 
+def logout() : #logout
   session.pop('userid', None)
   User.LogoutData()
   return redirect('/')
@@ -104,6 +104,140 @@ def getUserData() :
   return jsonify(
     { "success" : flag,
       "data" : userdata})
+
+@app.route('/admin_LearningData/', methods=['GET'])
+def allLearningData() : 
+  if request.method == 'GET' : 
+    data = Learning.AllData()
+
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
+
+@app.route('/admin_LearningData/add/', methods=['POST'])
+def addLearningData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'POST' :
+    learning = Learning()
+    learning.learningID = request.json['learningID']
+    learning.Title = request.json['Title']
+    learning.video = request.json['video']
+    learning.pointGameIDs = request.json['pointGameIDs']
+
+    return jsonify (
+      {
+        "success" : learning.addLearning(), 
+        "data" : learning.getData()
+      })
+
+@app.route('/admin_LearningData/edit/', methods=['GET','POST'])
+def editLearningData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'GET' : 
+    uid = request.json['learningID']
+    data = Learning.findLearningData(uid)
+    
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
+  elif request.method == 'POST' :
+    learning = Learning()
+    learning.learningID = request.json['learningID']
+    learning.Title = request.json['Title']
+    learning.video = request.json['video']
+    learning.pointGameIDs = request.json['pointGameIDs']
+
+    return jsonify (
+      {
+        "success" : learning.editLearning(), 
+        "data" : learning.getData()
+      })
+
+@app.route('/admin_LearningData/delete/', methods=['POST'])
+def deleteLearningData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'POST' :
+    learningID = request.json['learningID']
+
+    return jsonify (
+      {
+        "success" : Learning.deleteLearning(learningID)
+      })
+
+@app.route('/admin_PointGameData/', methods=['GET'])
+def allPointGameData() : 
+  if request.method == 'GET' : 
+    data = PointGame.AllData()
+
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
+
+@app.route('/admin_PointGameData/add/', methods=['POST'])
+def addPointGameData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'POST' :
+    pointGame = PointGame()
+    pointGame.pointGameID = request.json['pointGameID']
+    pointGame.title = request.json['title']
+    pointGame.description = request.json['description']
+    pointGame.content = request.json['content']
+    pointGame.answer = request.json['answer']
+    pointGame.selection = request.json['selection']
+    pointGame.hint = request.json['hint']
+    pointGame.earnPoint = request.json['earnPoint']
+
+    return jsonify (
+      {
+        "success" : pointGame.addPointGame(), 
+        "data" : pointGame.getData()
+      })
+
+@app.route('/admin_PointGameData/edit/', methods=['GET','POST'])
+def editPointGameData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'GET' : 
+    uid = request.json['pointGameID']
+    data = PointGame.finePointGame(uid)
+    
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
+  elif request.method == 'POST' :
+    pointGame = PointGame()
+    pointGame.pointGameID = request.json['pointGameID']
+    pointGame.title = request.json['title']
+    pointGame.description = request.json['description']
+    pointGame.content = request.json['content']
+    pointGame.answer = request.json['answer']
+    pointGame.selection = request.json['selection']
+    pointGame.hint = request.json['hint']
+    pointGame.earnPoint = request.json['earnPoint']
+
+    return jsonify (
+      {
+        "success" : pointGame.editPointGame(), 
+        "data" : pointGame.getData()
+      })
+
+@app.route('/admin_PointGameData/delete/', methods=['POST'])
+def deletePountGameData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'POST' :
+    pointGameID = request.json['pointGameID']
+
+    return jsonify (
+      {
+        "success" : PointGame.deletePointGame(pointGameID)
+      })
 
 
 if __name__=="__main__":
