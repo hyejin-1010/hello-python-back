@@ -22,8 +22,8 @@ class User(): #사용자 정보
             # DB에서 아이디 중복 확인해서 상태 리턴
 
             if (userPath) : 
-                for key in userPath.items() :
-                    if key == userid :
+                for key, value in userPath.items() :
+                    if str(value['userid']) == str(userid) :
                         return False
 
             #중복 값이 아니면 아이디 저장
@@ -57,7 +57,7 @@ class User(): #사용자 정보
             userPath = db.reference('/Users').get()
             if (userPath) : 
                 for key, value in userPath.items() :
-                    if key == userid : 
+                    if str(value['userid']) == str(userid) :
                         if value['password'] == password :
                             return True
                         else :
@@ -76,7 +76,7 @@ class User(): #사용자 정보
             userPath = db.reference('/Users').get()
             if (userPath) : 
                 for key, value in userPath.items() :
-                    if key == userid : 
+                    if str(value['userid']) == str(userid) :
                         return value
         except Exception as e:
             print(e)
@@ -103,6 +103,20 @@ class User(): #사용자 정보
         db.reference('/Users').child(userid).update({
             'profileImage' : blob.public_url,
         })
+
+    def GetRanking() : 
+        userPath = db.reference('/Users').get()
+        ranking = []
+        if (userPath) : 
+            for key, value in userPath.items() :
+                ranking.append(
+                    {'nickname' : value['nickname'], 
+                     'point' :  value['point']})
+
+            rr = sorted(ranking, key=(lambda x : x['point']))
+            return rr
+        return None
+        
 
 class Lesson : #DB는 class인데 예약어라 사용 불가능하여 수정 
     pass

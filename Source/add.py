@@ -239,6 +239,15 @@ def deletePountGameData() :
         "success" : PointGame.deletePointGame(pointGameID)
       })
 
+@app.route('/Ranking/', methods=['GET'])
+def getRanking() :
+  if request.method == 'GET' :
+    data = User.GetRanking()
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
 
 if __name__=="__main__":
   # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
