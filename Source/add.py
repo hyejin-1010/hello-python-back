@@ -17,7 +17,7 @@ import json
 app = Flask(__name__)
 
 #다른 .py 임포트
-from models import User, Learning, PointGame
+from models import User, Learning, PointGame, Dice
 
 @app.route('/', methods=['GET']) # 메인페이지
 def mainpage():
@@ -191,6 +191,7 @@ def deleteLearningData() :
   #admin 외 접근 제한 필요
   if request.method == 'POST' :
     body = GetJsonData(request)
+    learningID = body['learningID']
 
     return jsonify (
       {
@@ -264,7 +265,7 @@ def editPointGameData() :
       })
 
 @app.route('/admin_PointGameData/delete/', methods=['POST'])
-def deletePountGameData() : 
+def deletePointGameData() : 
   #admin 외 접근 제한 필요
   if request.method == 'POST' :
     body = GetJsonData(request)
@@ -273,6 +274,72 @@ def deletePountGameData() :
     return jsonify (
       {
         "success" : PointGame.deletePointGame(pointGameID)
+      })
+
+@app.route('/admin_DiceData/', methods=['GET'])
+def allDiceData() : 
+  if request.method == 'GET' : 
+    data = Dice.AllData()
+
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
+
+@app.route('/admin_DiceData/add/', methods=['POST'])
+def addDiceData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'POST' :
+    body = GetJsonData(request)
+
+    dice = Dice()
+    dice.diceID = body['diceID']
+    dice.pointGameIDs = body['pointGameIDs']
+
+    return jsonify (
+      {
+        "success" : dice.addDice(), 
+        "data" : dice.getData()
+      })
+
+@app.route('/admin_DiceData/edit/', methods=['GET','POST'])
+def editDiceData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'GET' : 
+    body = GetJsonData(request)
+
+    uid = body['diceID']
+    data = Dice.findDice(uid)
+    
+    return jsonify (
+      {
+        "success" : data != None, 
+        "data" : data
+      })
+  elif request.method == 'POST' :
+    body = GetJsonData(request)
+
+    dice = Dice()
+    dice.diceID = body['diceID']
+    dice.pointGameIDs = body['pointGameIDs']
+
+    return jsonify (
+      {
+        "success" : dice.editDice(), 
+        "data" : dice.getData()
+      })
+
+@app.route('/admin_DiceData/delete/', methods=['POST'])
+def deleteDiceData() : 
+  #admin 외 접근 제한 필요
+  if request.method == 'POST' :
+    body = GetJsonData(request)
+    diceID = body['diceID']
+
+    return jsonify (
+      {
+        "success" : Learning.deleteLearning(diceID)
       })
 
 @app.route('/Ranking/', methods=['GET'])
@@ -292,6 +359,40 @@ def GetJsonData(request) :
     body = json.loads(request.get_data(parse_form_data=True))
   return body
 
+@app.route('/LearningData/<learningID>') 
+def getLearningData(learningID) : #각 LearningData 정보 얻어오기
+  if request.method == 'GET' :
+    readData = Learning.findLearningData(learningID)
+    
+    return jsonify (
+      {
+        "success" : readData != None, 
+        "data" : readData
+      })
+
+@app.route('/PointGame/<pointGameID>')
+def getPointGameData(pointGameID) : #각 pointGame 정보 얻어오기
+  if request.method == 'GET' :
+    readData = PointGame.finePointGame(pointGameID)
+    
+    return jsonify (
+      {
+        "success" : readData != None, 
+        "data" : readData
+      })
+  
+@app.route('/DiceData/<diceID>')
+def getDiceData(diceID) : #각 Dice 정보 얻어오기
+  if request.method == 'GET' :
+    readData = Dice.findDice(diceID)
+    
+    return jsonify (
+      {
+        "success" : readData != None, 
+        "data" : readData
+      })
+  
+  
 if __name__=="__main__":
   # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
   app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True #사용자에게 정보 전달완료하면 teadown. 그 때마다 커밋=DB반영

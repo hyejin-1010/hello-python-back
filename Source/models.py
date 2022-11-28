@@ -128,7 +128,7 @@ class Learning :
         self.learningID = 0
         self.Title = "n번째 강의입니다."
         self.video = "url" # 강의 영상 url
-        self.pointGameIDs = {'id1' : 1} # pointGame 데이터베이스 정보
+        self.pointGameIDs = ["111","222"] # pointGame 데이터베이스 정보
         
     def getData(self) : 
         data = {
@@ -192,7 +192,7 @@ class Learning :
         userPath = db.reference('/Learning').get()
         if (userPath) : 
             for key, value in userPath.items() :
-                if value['learningID'] == learningID :
+                if str(value['learningID']) == str(learningID) :
                     return value
         return None #일치하는 정보 없음
     
@@ -297,7 +297,7 @@ class PointGame :
         userPath = db.reference('/PointGame').get()
         if (userPath) : 
             for key, value in userPath.items() :
-                if value['pointGameID'] == pointGameID :
+                if str(value['pointGameID']) == str(pointGameID) :
                     return value
         return None #일치하는 정보 없음
 
@@ -310,7 +310,77 @@ class PointGame :
             return data
         return None
 
+class Dice : 
+    def __init__(self) :
+        self.diceID = 0
+        self.pointGameIDs = ["111","222"] # pointGame 데이터베이스 정보
+    
+    def getData(self) :
+        data = {
+            "diceID" : self.diceID,
+            "pointGameIDs" : self.pointGameIDs,
+        }
+        return data
 
+    def addDice(self) : 
+        try :
+            if Dice.findDice(self.diceID) != None :  #중복 uid 
+                return False
+
+            #정보 저장
+            userPath = db.reference('/Dice')
+            userPath.child(self.diceID).set({ 
+                'diceID' : self.diceID,
+                "pointGameIDs" : self.pointGameIDs,
+            })
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def editDice(self) : 
+        try :
+            if Dice.findDice(self.diceID) == None :  #정보 없음 
+                return False
+
+            #정보 저장
+            userPath = db.reference('/Dice')
+            userPath.child(self.diceID).update({ 
+                "diceID" : self.diceID,
+                "pointGameIDs" : self.pointGameIDs,
+            })
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def deleteDice(diceID) : 
+        try :
+            if Dice.findDice(diceID) == None :  #정보 없음 
+                return False
+
+            db.reference('/Dice/' + diceID).delete()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def findDice(diceID) : 
+        userPath = db.reference('/Dice').get()
+        if (userPath) : 
+            for key, value in userPath.items() :
+                if str(value['diceID']) == str(diceID):
+                    return value
+        return None #일치하는 정보 없음
+
+    def AllData() :
+        userPath = db.reference('/Dice').get()
+        if (userPath) :
+            data = {}
+            for key, value in userPath.items() : 
+                data[key] = value
+            return data
+        return None
 
         
 
