@@ -35,11 +35,7 @@ def mainpage():
 @app.route('/register/', methods=['GET','POST']) #회원가입
 def register() :
   if request.method == 'POST' :
-    body = {}
-    if request.is_json :
-      body = request.json
-    else :
-      body = json.loads(request.get_data(parse_form_data=True))
+    body = GetJsonData(request)
 
     userid = body['userid']
     nickname = body['nickname']
@@ -71,12 +67,7 @@ def deleteUser() :
 @app.route('/login/', methods=['GET','POST']) #login
 def login() :
   if request.method == 'POST' :
-    body = {}
-
-    if request.is_json :
-      body = request.json
-    else :
-      body = json.loads(request.get_data(parse_form_data=True))
+    body = GetJsonData(request)
 
     userid = body['userid']
     password = body['password']
@@ -120,18 +111,18 @@ def getUserData() :
   if request.method == 'GET' : 
     pass
   elif request.method == 'POST' :
-    if request.is_json :
-      readData = json.loads(request.get_data(parse_form_data=True))
-      img = readData['newProfileImage']   # Base64로 변환된 File 읽어옴
-      img = base64.b64decode(img)
-      img = BytesIO(img)
-      img = Image.open(img)
-      
-      temp = tempfile.NamedTemporaryFile(delete=False)
-      img.save(temp.name + '.png')
-      
-      User.SetProfileImage(session.get('userid'), temp.name + '.png')
-      os.remove(temp.name + '.png')
+    body = GetJsonData(request)
+
+    img = body['newProfileImage']   # Base64로 변환된 File 읽어옴
+    img = base64.b64decode(img)
+    img = BytesIO(img)
+    img = Image.open(img)
+    
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    img.save(temp.name + '.png')
+    
+    User.SetProfileImage(session.get('userid'), temp.name + '.png')
+    os.remove(temp.name + '.png')
       
   return jsonify(
     { "success" : flag,
@@ -152,11 +143,13 @@ def allLearningData() :
 def addLearningData() : 
   #admin 외 접근 제한 필요
   if request.method == 'POST' :
+    body = GetJsonData(request)
+
     learning = Learning()
-    learning.learningID = request.json['learningID']
-    learning.Title = request.json['Title']
-    learning.video = request.json['video']
-    learning.pointGameIDs = request.json['pointGameIDs']
+    learning.learningID = body['learningID']
+    learning.Title = body['Title']
+    learning.video = body['video']
+    learning.pointGameIDs = body['pointGameIDs']
 
     return jsonify (
       {
@@ -168,7 +161,9 @@ def addLearningData() :
 def editLearningData() : 
   #admin 외 접근 제한 필요
   if request.method == 'GET' : 
-    uid = request.json['learningID']
+    body = GetJsonData(request)
+
+    uid = body['learningID']
     data = Learning.findLearningData(uid)
     
     return jsonify (
@@ -177,11 +172,13 @@ def editLearningData() :
         "data" : data
       })
   elif request.method == 'POST' :
+    body = GetJsonData(request)
+
     learning = Learning()
-    learning.learningID = request.json['learningID']
-    learning.Title = request.json['Title']
-    learning.video = request.json['video']
-    learning.pointGameIDs = request.json['pointGameIDs']
+    learning.learningID = body['learningID']
+    learning.Title = body['Title']
+    learning.video = body['video']
+    learning.pointGameIDs = body['pointGameIDs']
 
     return jsonify (
       {
@@ -193,7 +190,7 @@ def editLearningData() :
 def deleteLearningData() : 
   #admin 외 접근 제한 필요
   if request.method == 'POST' :
-    learningID = request.json['learningID']
+    body = GetJsonData(request)
 
     return jsonify (
       {
@@ -215,15 +212,17 @@ def allPointGameData() :
 def addPointGameData() : 
   #admin 외 접근 제한 필요
   if request.method == 'POST' :
+    body = GetJsonData(request)
+
     pointGame = PointGame()
-    pointGame.pointGameID = request.json['pointGameID']
-    pointGame.title = request.json['title']
-    pointGame.description = request.json['description']
-    pointGame.content = request.json['content']
-    pointGame.answer = request.json['answer']
-    pointGame.selection = request.json['selection']
-    pointGame.hint = request.json['hint']
-    pointGame.earnPoint = request.json['earnPoint']
+    pointGame.pointGameID = body['pointGameID']
+    pointGame.title = body['title']
+    pointGame.description = body['description']
+    pointGame.content = body['content']
+    pointGame.answer = body['answer']
+    pointGame.selection = body['selection']
+    pointGame.hint = body['hint']
+    pointGame.earnPoint = body['earnPoint']
 
     return jsonify (
       {
@@ -235,7 +234,9 @@ def addPointGameData() :
 def editPointGameData() : 
   #admin 외 접근 제한 필요
   if request.method == 'GET' : 
-    uid = request.json['pointGameID']
+    body = GetJsonData(request)
+
+    uid = body['pointGameID']
     data = PointGame.finePointGame(uid)
     
     return jsonify (
@@ -244,15 +245,17 @@ def editPointGameData() :
         "data" : data
       })
   elif request.method == 'POST' :
+    body = GetJsonData(request)
+
     pointGame = PointGame()
-    pointGame.pointGameID = request.json['pointGameID']
-    pointGame.title = request.json['title']
-    pointGame.description = request.json['description']
-    pointGame.content = request.json['content']
-    pointGame.answer = request.json['answer']
-    pointGame.selection = request.json['selection']
-    pointGame.hint = request.json['hint']
-    pointGame.earnPoint = request.json['earnPoint']
+    pointGame.pointGameID = body['pointGameID']
+    pointGame.title = body['title']
+    pointGame.description = body['description']
+    pointGame.content = body['content']
+    pointGame.answer = body['answer']
+    pointGame.selection = body['selection']
+    pointGame.hint = body['hint']
+    pointGame.earnPoint = body['earnPoint']
 
     return jsonify (
       {
@@ -264,7 +267,8 @@ def editPointGameData() :
 def deletePountGameData() : 
   #admin 외 접근 제한 필요
   if request.method == 'POST' :
-    pointGameID = request.json['pointGameID']
+    body = GetJsonData(request)
+    pointGameID = body['pointGameID']
 
     return jsonify (
       {
@@ -280,6 +284,13 @@ def getRanking() :
         "success" : data != None, 
         "data" : data
       })
+  
+def GetJsonData(request) : 
+  if request.is_json :
+    body = request.json
+  else :
+    body = json.loads(request.get_data(parse_form_data=True))
+  return body
 
 if __name__=="__main__":
   # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
