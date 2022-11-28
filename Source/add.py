@@ -6,8 +6,11 @@ from flask import jsonify #jsonify
 from flask import request #회원정보를 제출할 때 쓰는 request, post요청 처리
 from flask import redirect #리다이렉트
 from flask import session #세션
-from flask_wtf.csrf import CSRFProtect #csrf
+#from flask_wtf.csrf import CSRFProtect #csrf
 from werkzeug.utils import secure_filename
+from io import BytesIO
+from PIL import Image
+import base64
 from flask_cors import CORS
 import json
 
@@ -56,8 +59,14 @@ def register() :
 
 @app.route('/deleteUser/', methods=['GET','POST']) #삭제
 def deleteUser() :
-  User.DeleteData(session['userid'])
-  return redirect('/')
+  if session.get('userid') is None : 
+    flag = False
+  else :
+    flag = User.DeleteData(session['userid'])
+  return jsonify (
+    {
+      "success" : flag, 
+    })
 
 @app.route('/login/', methods=['GET','POST']) #login
 def login() :
@@ -86,9 +95,16 @@ def login() :
 
 @app.route('/logout/') 
 def logout() : #logout
-  session.pop('userid', None)
-  User.LogoutData()
-  return redirect('/')
+  if session.get('userid') is None : 
+    flag = False
+  else :
+    session.pop('userid', None)
+    User.LogoutData()
+    flag = True
+  return jsonify (
+    {
+      "success" : flag, 
+    })
 
 @app.route('/userInform/', methods=['GET', 'POST'])  #사용자 정보 수정
 def getUserData() : 
@@ -105,15 +121,17 @@ def getUserData() :
     pass
   elif request.method == 'POST' :
     if request.is_json :
-      newPicture = request.json['newProfileImage'] #json 이미지 변환?
+      readData = json.loads(request.get_data(parse_form_data=True))
+      img = readData['newProfileImage']   # Base64로 변환된 File 읽어옴
+      img = base64.b64decode(img)
+      img = BytesIO(img)
+      img = Image.open(img)
       
-      pictureImage = request.files['file']
-
       temp = tempfile.NamedTemporaryFile(delete=False)
-      pictureImage.save(temp.name)
+      img.save(temp.name + '.png')
       
-      User.SetProfileImage(session.get('userid'), temp.name)
-      os.remove(temp.name)
+      User.SetProfileImage(session.get('userid'), temp.name + '.png')
+      os.remove(temp.name + '.png')
       
   return jsonify(
     { "success" : flag,

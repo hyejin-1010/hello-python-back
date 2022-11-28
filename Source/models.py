@@ -97,7 +97,9 @@ class User(): #사용자 정보
         blob.make_public()
 
         # delete origin File
-
+        # tempData = db.reference('/Users').child(userid).get()
+        # temp = bucket.get_blob() (tempData['profileImage'])
+        # temp.delete()
 
         # change path
         db.reference('/Users').child(userid).update({
@@ -113,7 +115,7 @@ class User(): #사용자 정보
                     {'nickname' : value['nickname'], 
                      'point' :  value['point']})
 
-            rr = sorted(ranking, key=(lambda x : x['point']))
+            rr = sorted(ranking, key=(lambda x : x['point'])) #sort
             return rr
         return None
         
