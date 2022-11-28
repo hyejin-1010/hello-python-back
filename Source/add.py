@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 from io import BytesIO
 from PIL import Image
 import base64
+from flask_cors import CORS
 import json
 
 app = Flask(__name__)
@@ -34,22 +35,27 @@ def mainpage():
 @app.route('/register/', methods=['GET','POST']) #회원가입
 def register() :
   if request.method == 'POST' :
+    body = {}
     if request.is_json :
-      userid = request.json['userid']
-      nickname = request.json['nickname']
-      password = request.json['password']
+      body = request.json
+    else :
+      body = json.loads(request.get_data(parse_form_data=True))
 
-      flag = User.RegisterData(userid, nickname, password)
+    userid = body['userid']
+    nickname = body['nickname']
+    password = body['password']
 
-      data = {  
-        "success" : flag,
-        "data" : {
-          "userid" : userid,
-          "nickname" : nickname,
-          "password" : password
-        }
+    flag = User.RegisterData(userid, nickname, password)
+
+    data = {  
+      "success" : flag,
+      "data" : {
+        "userid" : userid,
+        "nickname" : nickname,
+        "password" : password
       }
-      return jsonify(data)
+    }
+    return jsonify(data)
 
 @app.route('/deleteUser/', methods=['GET','POST']) #삭제
 def deleteUser() :
@@ -65,21 +71,27 @@ def deleteUser() :
 @app.route('/login/', methods=['GET','POST']) #login
 def login() :
   if request.method == 'POST' :
+    body = {}
+
     if request.is_json :
-      userid = request.json['userid']
-      password = request.json['password']
+      body = request.json
+    else :
+      body = json.loads(request.get_data(parse_form_data=True))
 
-      flag = User.LoginData(userid, password)
-      session['userid'] = userid  #세션에 로그인 정보 저장
+    userid = body['userid']
+    password = body['password']
 
-      data = {
-        "success" : flag,
-        "data" : {
-          "userid" : userid,
-          "password" : password
-        }
+    flag = User.LoginData(userid, password)
+    session['userid'] = userid  #세션에 로그인 정보 저장
+
+    data = {
+      "success" : flag,
+      "data" : {
+        "userid" : userid,
+        "password" : password
       }
-      return jsonify(data)
+    }
+    return jsonify(data)
 
 @app.route('/logout/') 
 def logout() : #logout
@@ -280,4 +292,6 @@ if __name__=="__main__":
   #csrf = CSRFProtect()
   #csrf.init_app(app)
 
-  app.run(debug=False)  # host 등을 직접 지정하고 싶다면 app.run(host="127.0.0.1", port="5000", debug=True)
+  CORS(app)
+
+  app.run(port="5001", debug=False)  # host 등을 직접 지정하고 싶다면 app.run(host="127.0.0.1", port="5000", debug=True)
