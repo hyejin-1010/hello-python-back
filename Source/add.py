@@ -42,14 +42,11 @@ def register() :
     password = body['password']
 
     flag = User.RegisterData(userid, nickname, password)
+    userData =  User.changeData(User.GetUserData(userid))
 
     data = {  
       "success" : flag,
-      "data" : {
-        "userid" : userid,
-        "nickname" : nickname,
-        "password" : password
-      }
+      "data" : userData,
     }
     return jsonify(data)
 
@@ -73,14 +70,12 @@ def login() :
     password = body['password']
 
     flag = User.LoginData(userid, password)
+    userData =  User.changeData(User.GetUserData(userid))
     session['userid'] = userid  #세션에 로그인 정보 저장
 
     data = {
       "success" : flag,
-      "data" : {
-        "userid" : userid,
-        "password" : password
-      }
+      "data" : userData,
     }
     return jsonify(data)
 
@@ -90,7 +85,6 @@ def logout() : #logout
     flag = False
   else :
     session.pop('userid', None)
-    User.LogoutData()
     flag = True
   return jsonify (
     {
@@ -127,6 +121,17 @@ def getUserData() :
   return jsonify(
     { "success" : flag,
       "data" : userdata})
+
+
+@app.route('/doneLearning/', methods=['POST'])  #학습완료 업데이트
+def doneLearning() : 
+  body = GetJsonData(request)
+  flag = User.addCompleteData(body['userid'], body['learningID'])
+
+  return jsonify(
+    {
+        "success" : flag
+    })
 
 @app.route('/admin_LearningData/', methods=['GET'])
 def allLearningData() : 
@@ -392,6 +397,37 @@ def getDiceData(diceID) : #각 Dice 정보 얻어오기
         "data" : readData
       })
   
+@app.route('/PointGames/<learningID>', methods=['GET']) 
+def getPointGamesOfLearingID(learningID) : #LearningID에 따른 PointGame 가져오기
+  if request.method == 'GET' :
+    flag = False
+    pointGameData = {}
+
+    findData = Learning.findLearningData(learningID)
+    if findData != None :
+      pointGameList = list(findData.get('pointGameIDs').values())
+      for ids in pointGameList : 
+        pointGameData[ids] = PointGame.finePointGame(ids)
+      flag = True      
+
+    return  jsonify (
+      {
+        "success" : flag,
+        "data" : pointGameData,
+      })
+
+@app.route('/learningDatas/<classID>', methods=['GET'])
+def getLearningDatasOfClassID(classID) : #ClassID에 따른 LearingID 가져오기
+  if request.method == 'GET' :
+    #임시 : classID와 관련 없이 모두 get
+    flag = True
+    LearningDatas = Learning.AllData()
+    
+    return  jsonify (
+      {
+        "success" : flag,
+        "data" : LearningDatas,
+      })
   
 if __name__=="__main__":
   # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile

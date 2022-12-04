@@ -14,8 +14,25 @@ firebase_admin.initialize_app(cred,{
 dir = db.reference() #기본 위치 지정
 
 class User(): #사용자 정보
-    def __init__() : pass
+    def __init__(self) :
+        self.userid = 'userid'
+        self.nickname = 'nickname'
+        self.password = 'password'
+        self.point = 0
+        self.profileImage = 'https://firebasestorage.googleapis.com/v0/b/hello-python-fbe83.appspot.com/o/user.png?alt=media&token=6b8057b2-5e01-4874-95dd-34406afc1c34'
+        self.completedLearnings = [] #lerning 완료된 uid 저장 배열
 
+    def changeData(value) : 
+        data = {
+            "userid" : value.get('userid'),
+            "nickname" : value.get('nickname'),
+            "password" : value.get('password'),
+            "point" : value.get('point'),
+            "profileImage" : value.get('profileImage'),
+            "completedLearnings" : [] if value.get('completedLearnings') is None else list(value.get('completedLearnings').values()),
+        }
+        return data
+    
     def RegisterData(userid, nickname, password) :
         try :
             userPath = db.reference('/Users').get()
@@ -34,6 +51,7 @@ class User(): #사용자 정보
                 'password' : password,
                 'point' : 0,
                 'profileImage' : 'https://firebasestorage.googleapis.com/v0/b/hello-python-fbe83.appspot.com/o/user.png?alt=media&token=6b8057b2-5e01-4874-95dd-34406afc1c34',
+                'completedLearnings' : []
             })
             return True
         except Exception as e:
@@ -68,9 +86,6 @@ class User(): #사용자 정보
             return False
         return True
     
-    def LogoutData() :
-       userData = '' #데이터 초기화
-
     def GetUserData(userid) :
         try :
             userPath = db.reference('/Users').get()
@@ -105,7 +120,15 @@ class User(): #사용자 정보
         db.reference('/Users').child(userid).update({
             'profileImage' : blob.public_url,
         })
-
+    
+    def addCompleteData(userid, learningID) : 
+        try : 
+            db.reference('/Users').child(userid).child('completedLearnings').push(learningID)
+            return True
+        except Exception as e:
+            print(e)
+            return False
+    
     def GetRanking() : 
         userPath = db.reference('/Users').get()
         ranking = []
@@ -117,8 +140,7 @@ class User(): #사용자 정보
 
             rr = sorted(ranking, key=(lambda x : x['point'])) #sort
             return rr
-        return None
-        
+        return None     
 
 class Lesson : #DB는 class인데 예약어라 사용 불가능하여 수정 
     pass
@@ -154,6 +176,7 @@ class Learning :
                 'video' : self.video,
                 'pointGameIDs' : self.pointGameIDs,
             })
+
             return True
         except Exception as e:
             print(e)
@@ -204,8 +227,7 @@ class Learning :
                 data[key] = value
             return data
         return None
-    
-
+ 
 class PointGame : 
     def __init__(self) :
         self.pointGameID = 0
