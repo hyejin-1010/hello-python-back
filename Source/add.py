@@ -49,6 +49,21 @@ def register() :
       "data" : userData,
     }
     return jsonify(data)
+  
+@app.route('/register/idCheck', methods=['POST']) #회원가입 중복 체크
+def idDoubleCheck() :
+  if request.method == 'POST' :
+    body = GetJsonData(request)
+
+    userid = body['userid']
+
+    flag = User.RegisterDoubleCheck(userid)
+
+    data = {  
+      "success" : flag, #True: 가입 가능/ False: 중복 있음
+      "data" : body,
+    }
+    return jsonify(data)
 
 @app.route('/deleteUser/', methods=['GET','POST']) #삭제
 def deleteUser() :
