@@ -6,7 +6,7 @@ from flask import jsonify #jsonify
 from uuid import uuid4
 
 #데이터베이스
-cred = credentials.Certificate("key\hello-python-fbe83-firebase-adminsdk-4updc-c46193ba98.json")
+cred = credentials.Certificate("hello-python-fbe83-firebase-adminsdk-4updc-c46193ba98.json")
 firebase_admin.initialize_app(cred,{
     'databaseURL':'https://hello-python-fbe83-default-rtdb.firebaseio.com/',
     'storageBucket': 'hello-python-fbe83.appspot.com'
@@ -150,7 +150,10 @@ class Learning :
         self.learningID = 0
         self.Title = "n번째 강의입니다."
         self.video = "url" # 강의 영상 url
-        self.pointGameIDs = ["111","222"] # pointGame 데이터베이스 정보
+        # self.pointGameIDs = ["111","222"] # pointGame 데이터베이스 정보
+        self.pointGameIDs = [] # pointGame 데이터베이스 정보
+        self.order = 0
+        self.classID = 0
         
     def getData(self) : 
         data = {
@@ -158,6 +161,8 @@ class Learning :
             "Title" : self.Title,
             "video" : self.video,
             "pointGameIDs" : self.pointGameIDs,
+            "order": self.order,
+            "classID": self.classID,
         }
         return data
     
@@ -175,6 +180,8 @@ class Learning :
                 'Title' : self.Title,
                 'video' : self.video,
                 'pointGameIDs' : self.pointGameIDs,
+                'order': self.order,
+                'classID': self.classID,
             })
 
             return True
@@ -194,6 +201,8 @@ class Learning :
                 'Title' : self.Title,
                 'video' : self.video,
                 'pointGameIDs' : self.pointGameIDs,
+                'order': self.order,
+                'classID': self.classID,
             })
             return True
         except Exception as e:
@@ -246,6 +255,7 @@ class PointGame :
             "3" : "내용"
         }
         self.earnPoint = 5  #정답을 맞추면 벌 수 있는 포인트. 힌트 사용시 n점씩 줄어든다.
+        self.type = "input"
     
     def getData(self) :
         data = {
@@ -256,7 +266,8 @@ class PointGame :
             "answer" : self.answer,
             "selection" : self.selection,
             "hint" : self.hint,
-            "earnPoint" : self.earnPoint ,
+            "earnPoint" : self.earnPoint,
+            "type": self.type,
         }
         return data
 
@@ -275,7 +286,8 @@ class PointGame :
                 "answer" : self.answer,
                 "selection" : self.selection,
                 "hint" : self.hint,
-                "earnPoint" : self.earnPoint ,
+                "earnPoint" : self.earnPoint,
+                "type": self.type,
             })
             return True
         except Exception as e:
@@ -297,7 +309,8 @@ class PointGame :
                 "answer" : self.answer,
                 "selection" : self.selection,
                 "hint" : self.hint,
-                "earnPoint" : self.earnPoint ,
+                "earnPoint" : self.earnPoint,
+                "type": self.type,
             })
             return True
         except Exception as e:
@@ -317,6 +330,8 @@ class PointGame :
 
     def finePointGame(pointGameID) : 
         userPath = db.reference('/PointGame').get()
+        if isinstance(userPath, list):
+            userPath = {i : userPath[i] for i in range(len(userPath))}
         if (userPath) : 
             for key, value in userPath.items() :
                 if str(value['pointGameID']) == str(pointGameID) :

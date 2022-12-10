@@ -155,6 +155,8 @@ def addLearningData() :
     learning.Title = body['Title']
     learning.video = body['video']
     learning.pointGameIDs = body['pointGameIDs']
+    learning.order = body['order']
+    learning.classID = body['classID']
 
     return jsonify (
       {
@@ -405,7 +407,7 @@ def getPointGamesOfLearingID(learningID) : #LearningID에 따른 PointGame 가�
 
     findData = Learning.findLearningData(learningID)
     if findData != None :
-      pointGameList = list(findData.get('pointGameIDs').values())
+      pointGameList = list(findData.get('pointGameIDs'))
       for ids in pointGameList : 
         pointGameData[ids] = PointGame.finePointGame(ids)
       flag = True      
