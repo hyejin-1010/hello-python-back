@@ -36,7 +36,7 @@ class User(): #사용자 정보
     def RegisterData(userid, nickname, password) :
         try :
             userPath = db.reference('/Users').get()
-            # DB에서 아이디 중복 확인해서 상태 리턴
+            # DB에서 아이디 중복 확인 한번 더 확인
 
             if (userPath) : 
                 for key, value in userPath.items() :
@@ -58,6 +58,16 @@ class User(): #사용자 정보
             print(e)
             return False
     
+    def RegisterDoubleCheck(userid) :
+        # DB에서 아이디 중복 확인해서 상태 리턴
+        userPath = db.reference('/Users').get()
+
+        if (userPath) : 
+            for key, value in userPath.items() :
+                if str(value['userid']) == str(userid) :
+                    return False
+        return True
+
     def DeleteData(userid) :
         try :
             userPath = db.reference('/Users/' + userid).get()
