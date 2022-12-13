@@ -352,6 +352,8 @@ class PointGame :
         userPath = db.reference('/PointGame').get()
         if (userPath) :
             data = {}
+            if isinstance(userPath, list):
+                userPath = {i : userPath[i] for i in range(len(userPath))}
             for key, value in userPath.items() : 
                 data[key] = value
             return data
