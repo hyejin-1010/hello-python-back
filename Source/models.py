@@ -23,6 +23,7 @@ class User(): #사용자 정보
         self.completedLearnings = [] #lerning 완료된 uid 저장 배열
 
     def changeData(value) : 
+        print(value)
         data = {
             "userid" : value.get('userid'),
             "nickname" : value.get('nickname'),
@@ -130,18 +131,38 @@ class User(): #사용자 정보
         db.reference('/Users').child(userid).update({
             'profileImage' : blob.public_url,
         })
+
+    def addPoint (userid, point) :
+        try :
+            print('chloe test 1')
+            userData = User.GetUserData(userid)
+            print('chloe test 2')
+            originPoint = int(userData['point'])
+            print('chloe test 3')
+            db.reference('/Users').child(userid).update({
+                'point' : originPoint+int(point)
+                })
+            print('chloe test 4')
+            return True
+        except Exception as e :
+            print(e)
+            return False
     
     def addCompleteData(userid, learningID) : 
         try : 
             userData = User.GetUserData(userid)
-            if learningID not in userData['completedLearnings'].values() : 
+            if 'completedLearnings' not in userData : 
+                db.reference('/Users').child(userid).child('completedLearnings').set(learningID)
+            elif learningID not in userData['completedLearnings'].values() : 
                 db.reference('/Users').child(userid).child('completedLearnings').push(learningID)
             
+            '''
             originPoint = int(userData['point'])
             earnPoint = int(Learning.getPointData(learningID))
             db.reference('/Users').child(userid).update({
                 'point' : originPoint+earnPoint
                 })
+            '''
             return True
         except Exception as e:
             print(e)
@@ -153,7 +174,8 @@ class User(): #사용자 정보
         if (userPath) : 
             for key, value in userPath.items() :
                 ranking.append(
-                    {'nickname' : value['nickname'], 
+                    { 'userid': value['userid'],
+                     'nickname' : value['nickname'], 
                      'point' :  value['point']})
 
             rr = sorted(ranking, key=(lambda x : x['point']), reverse=True) #sort

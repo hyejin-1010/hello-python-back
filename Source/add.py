@@ -137,6 +137,22 @@ def getUserData() :
     { "success" : flag,
       "data" : userdata})
 
+@app.route('/userInformation/<userid>', methods=['GET'])
+def getUserInformation(userid) : 
+  userdata = User.changeData(User.GetUserData(userid))
+  return jsonify(
+    { "success" : userdata != None,
+      "data" : userdata })
+
+@app.route('/addPoint/', methods=['POST'])  #학습완료 업데이트
+def addPoint() : 
+  body = GetJsonData(request)
+  flag = User.addPoint(body['userid'], body['point'])
+
+  return jsonify(
+    {
+        "success" : flag
+    })
 
 @app.route('/doneLearning/', methods=['POST'])  #학습완료 업데이트
 def doneLearning() : 
@@ -190,7 +206,7 @@ def addLearningData() :
 
 @app.route('/admin_LearningData/edit/', methods=['GET','POST'])
 def editLearningData() : 
-  #admin 외 접근 제한 필요
+  # admin 외 접근 제한 필요
   if request.method == 'GET' : 
     body = GetJsonData(request)
 
@@ -208,8 +224,10 @@ def editLearningData() :
     learning = Learning()
     learning.learningID = body['learningID']
     learning.Title = body['Title']
-    learning.video = body['video']
-    learning.pointGameIDs = body['pointGameIDs']
+    learning.video = body['video'] if 'video' in body else ''
+    learning.pointGameIDs = body['pointGameIDs'] if 'pointGameIDs' in body else []
+    learning.classID = body['classID']
+    learning.order = body['order'] if 'order' in body else ''
 
     return jsonify (
       {
@@ -249,11 +267,12 @@ def addPointGameData() :
     pointGame = PointGame()
     pointGame.pointGameID = body['pointGameID']
     pointGame.title = body['title']
-    pointGame.description = body['description']
-    pointGame.content = body['content']
+    pointGame.type = body['type'] if 'type' in body else 'input'
+    pointGame.description = body['description'] if 'description' in body else ''
+    pointGame.content = body['content'] if 'content' in body else ''
     pointGame.answer = body['answer']
-    pointGame.selection = body['selection']
-    pointGame.hint = body['hint']
+    pointGame.selection = body['selection'] if 'selection' in body else []
+    pointGame.hint = body['hint'] if 'hint' in body else ''
     pointGame.earnPoint = body['earnPoint']
 
     return jsonify (
@@ -282,11 +301,12 @@ def editPointGameData() :
     pointGame = PointGame()
     pointGame.pointGameID = body['pointGameID']
     pointGame.title = body['title']
-    pointGame.description = body['description']
-    pointGame.content = body['content']
+    pointGame.type = body['type'] if 'type' in body else 'input'
+    pointGame.description = body['description'] if 'description' in body else ''
+    pointGame.content = body['content'] if 'content' in body else ''
     pointGame.answer = body['answer']
-    pointGame.selection = body['selection']
-    pointGame.hint = body['hint']
+    pointGame.selection = body['selection'] if 'selection' in body else []
+    pointGame.hint = body['hint'] if 'hint' in body else ''
     pointGame.earnPoint = body['earnPoint']
 
     return jsonify (
@@ -421,6 +441,25 @@ def getDiceData(diceID) : #각 Dice 정보 얻어오기
       {
         "success" : readData != None, 
         "data" : readData
+      })
+
+@app.route('/DiceGames/<diceID>')
+def getDiceGames(diceID) : #각 Dice 정보 얻어오기
+  if request.method == 'GET' :
+    flag = False
+    pointGameData = {}
+    findData = Dice.findDice(diceID)
+
+    if findData != None :
+      pointGameList = list(findData.get('pointGameIDs'))
+      for ids in pointGameList : 
+        pointGameData[ids] = PointGame.finePointGame(ids)
+      flag = True  
+    
+    return jsonify (
+      {
+        "success" : flag, 
+        "data" : pointGameData,
       })
   
 @app.route('/PointGames/<learningID>', methods=['GET']) 
