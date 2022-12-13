@@ -133,7 +133,15 @@ class User(): #사용자 정보
     
     def addCompleteData(userid, learningID) : 
         try : 
-            db.reference('/Users').child(userid).child('completedLearnings').push(learningID)
+            userData = User.GetUserData(userid)
+            if learningID not in userData['completedLearnings'].values() : 
+                db.reference('/Users').child(userid).child('completedLearnings').push(learningID)
+            
+            originPoint = int(userData['point'])
+            earnPoint = int(Learning.getPointData(learningID))
+            db.reference('/Users').child(userid).update({
+                'point' : originPoint+earnPoint
+                })
             return True
         except Exception as e:
             print(e)
@@ -148,9 +156,20 @@ class User(): #사용자 정보
                     {'nickname' : value['nickname'], 
                      'point' :  value['point']})
 
-            rr = sorted(ranking, key=(lambda x : x['point'])) #sort
+            rr = sorted(ranking, key=(lambda x : x['point']), reverse=True) #sort
             return rr
         return None     
+    
+    def IsAdmin(userid) :
+        try : 
+            userData = User.GetUserData(userid)
+            if userData is not None : 
+                if userData.get('role') == "admin" :
+                    return True 
+
+        except Exception as e:
+            print(e)
+        return False
 
 class Lesson : #DB는 class인데 예약어라 사용 불가능하여 수정 
     pass
@@ -246,6 +265,22 @@ class Learning :
                 data[key] = value
             return data
         return None
+
+    def getPointData(learningID) :  #LearningID와 연관된 모든 earnPoint값을 가져온다.
+        allPoint = 0
+        try :
+            data = Learning.findLearningData(learningID)
+            if data == None :  #정보 없음 
+                return allPoint
+                
+            for pointgameID in data['pointGameIDs'] : 
+                ptData = PointGame.finePointGame(pointgameID)
+                if ptData != None : 
+                    allPoint += int(ptData['earnPoint'])
+            return allPoint
+        except Exception as e:
+            print(e)
+            return allPoint
  
 class PointGame : 
     def __init__(self) :

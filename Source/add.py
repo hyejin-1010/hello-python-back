@@ -148,6 +148,15 @@ def doneLearning() :
         "success" : flag
     })
 
+@app.route('/admin_Check/', methods=['GET'])
+def checkAdmin():
+  if request.method == 'GET' : 
+    body = GetJsonData(request)
+    return jsonify (
+      {
+        "success" : User.IsAdmin(body['userid'])
+      })
+
 @app.route('/admin_LearningData/', methods=['GET'])
 def allLearningData() : 
   if request.method == 'GET' : 
